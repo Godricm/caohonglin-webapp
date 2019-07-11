@@ -1,16 +1,16 @@
 <template> 
 	<view>  
 		
-		<form @submit="formSubmit">
+		<x-form :rules="rules" :model="form" ref="ruleForm" @submit="formSubmit">
 			<image style="width: 100%;" src="/static/images/0.jpg" mode="scaleToFill"></image> 
 			<view class="uni-common-mt">
 			<view class="uni-form-item uni-column">
-				<view class="title">姓名</view>
-				<input class="uni-input" name="customerName" focus placeholder="请填写您的姓名" />
+				<view class="title">姓名</view> 
+				 <x-input type="text" :value="form.customerName" prop="input"   class="uni-input" name="customerName"  focus placeholder="请填写您的姓名" /> 
 			</view>
 			<view class="uni-form-item uni-column">
 				<view class="title">手机</view>
-				<input class="uni-input" name="mobile" placeholder="请填写您的手机号码" />
+				<x-input type="text" :value="form.mobile" class="uni-input" prop="input"  name="mobile" placeholder="请填写您的手机号码" />
 			</view>
 			<view class="uni-form-item uni-column">
 				<view class="title">预约到访人数</view> 
@@ -52,7 +52,7 @@
 				</view>
 			</view>
 		</view>
-		</form>
+		</x-form>
 	
 	</view>
 </template>
@@ -160,7 +160,21 @@
 				date: '',
 				startDate: '',
 				endDate: '',
-				timeData: {}
+				timeData: {},
+				form:{
+					customerName:"",
+					mobile:""
+				},
+				rules:{
+					customerName:[{
+						required:true,
+						messages:'请填写您的姓名'
+					}],
+					mobile:[{
+						required:true,
+						messages:"请填写您的手机号码"
+					}]
+				}
 			}
 		},
 		methods: {
@@ -225,7 +239,17 @@
 				this.show = false
 			},
 			formSubmit(e) {
-				console.log('form发生了submit事件，携带数据为：' + JSON.stringify(e.detail.value))
+				this.$refs['ruleForm'].validate((valid) => {
+					if (valid) {
+						console.log('form发生了submit事件，携带数据为：' + JSON.stringify(e))
+						uni.showToast({
+						    title: "提交成功",
+						    duration: 1000,
+						});
+						return;
+					}
+				});
+				 
 			},
 		}
 	}

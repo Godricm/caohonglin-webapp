@@ -60,5 +60,13 @@
             "urlCheck" : false
         },
         "usingComponents" : true
+    },
+    "h5" : {
+        "router" : {
+            "base" : "/honglin/"
+        },
+        "devServer" : {
+            "https" : false
+        }
     }
 }
