@@ -1,16 +1,16 @@
 <template> 
 	<view>  
 		
-		<x-form :rules="rules" :model="form" ref="ruleForm" @submit="formSubmit">
+		<form  @submit="formSubmit">
 			<image style="width: 100%;" src="/static/images/0.jpg" mode="scaleToFill"></image> 
 			<view class="uni-common-mt">
 			<view class="uni-form-item uni-column">
 				<view class="title">姓名</view> 
-				 <x-input type="text" :value="form.customerName" prop="input"   class="uni-input" name="customerName"  focus placeholder="请填写您的姓名" /> 
+				 <input type="text" class="uni-input" name="customerName"  focus placeholder="请填写您的姓名" /> 
 			</view>
 			<view class="uni-form-item uni-column">
 				<view class="title">手机</view>
-				<x-input type="text" :value="form.mobile" class="uni-input" prop="input"  name="mobile" placeholder="请填写您的手机号码" />
+				<input type="text" class="uni-input" name="mobile" placeholder="请填写您的手机号码" />
 			</view>
 			<view class="uni-form-item uni-column">
 				<view class="title">预约到访人数</view> 
@@ -52,7 +52,7 @@
 				</view>
 			</view>
 		</view>
-		</x-form>
+		</form>
 	
 	</view>
 </template>
@@ -68,6 +68,8 @@
  import {xRadio} from "async-validator-uniapp";
  import {xPicker} from "async-validator-uniapp";
  import {xTextarea} from "async-validator-uniapp";
+ var  graceChecker = require("../../common/graceChecker.js");
+ var configs=require("../../common/configs.js")
 	export default {
 		components: {
 			uniCalendar,xForm,xInput,xCheckboxGroup,xCheckbox,xRadioGroup,xRadio,xPicker,xTextarea
@@ -160,31 +162,17 @@
 				date: '',
 				startDate: '',
 				endDate: '',
-				timeData: {},
-				form:{
-					customerName:"",
-					mobile:""
-				},
-				rules:{
-					customerName:[{
-						required:true,
-						messages:'请填写您的姓名'
-					}],
-					mobile:[{
-						required:true,
-						messages:"请填写您的手机号码"
-					}]
-				}
+				timeData: {} 
 			}
 		},
 		methods: {
 			radioChange(e) {
 				var checked = e.target.value
-				console.log(checked)
+				//console.log(checked)
 			},
 			bindPickerChange(e) {
 				console.log('picker发送选择改变，携带值为：' + e.target.value)
-				this.index = e.target.value
+				//this.index = e.target.value
 			},
 			closeMask() {
 				this.show = false
@@ -239,16 +227,47 @@
 				this.show = false
 			},
 			formSubmit(e) {
-				this.$refs['ruleForm'].validate((valid) => {
-					if (valid) {
-						console.log('form发生了submit事件，携带数据为：' + JSON.stringify(e))
-						uni.showToast({
-						    title: "提交成功",
-						    duration: 1000,
-						});
-						return;
-					}
-				});
+				var rule = [
+					{name:"customerName", checkType : "notnull", checkRule:"",  errorMsg:"请填写您的姓名"},
+					{name:"mobile", checkType : "phoneno", checkRule:"",  errorMsg:"请填写您的手机号码"},
+					{name:"linkDate", checkType : "notnull", checkRule:"",  errorMsg:"请选择到访日期"}
+				];
+				//进行表单检查
+				var formData = e.detail.value;
+				var checkRes = graceChecker.check(formData, rule);
+				if(checkRes){ 
+					var linkNum=this.array[formData.linkNum].name;
+							// 请求
+					uni.request({
+						//api地址
+						url: configs.linkMsgUrl,
+						data: {
+							//请求值
+							'customerName':formData.customerName,
+							'mobile':formData.mobile,
+							'linkNum':linkNum,
+							'linkDate':formData.linkDate,
+							'linkType':formData.linkType
+						},
+						//请求类型
+						method:'POST',
+						//请求头
+						header: {
+							'content-type': 'application/json', 
+						},
+						success: (res) => {
+							console.log(res.data)
+							if(res.data.status==2){
+								console.log("登录成功！");
+							}else{
+								console.log(res)
+							}
+						}
+					});
+				}else{
+					uni.showToast({ title: graceChecker.error, icon: "none" });
+				}
+				 
 				 
 			},
 		}
